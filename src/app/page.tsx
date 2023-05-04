@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Montserrat, Roboto_Slab } from "next/font/google";
 import clsx from "clsx";
-// import { history } from "@/data/history.js";
+
 import MessageIcon from "@/assets/message.svg";
 import GearIcon from "@/assets/gear.svg";
 import SendIcon from "@/assets/send.svg";
@@ -15,12 +15,9 @@ import { useEffect, useRef, useState } from "react";
 const montserrat = Montserrat({ subsets: ["latin"] });
 const robotoSlab = Roboto_Slab({ subsets: ["latin"] });
 
-const dummy =
-  "Ut porttitor risus nisl, at cursus arcu venenatis sed. Aliquam a pretium neque. Cras non consequat turpis. Suspendisse vel pulvinar est, ac mollis neque. Proin pretium, nibh ut porta tincidunt, turpis turpis scelerisque est, quis auctor nulla arcu ac metus. Quisque id felis velit. Integer pharetra, est quis imperdiet porttitor, libero risus tempus turpis, ac euismod leo ex ut tellus. Integer pulvinar auctor lacus eu ornare";
-
 type chatListEntry = {
   question: string;
-  answer: string;
+  response: string;
 };
 
 type session = {
@@ -38,27 +35,25 @@ export default function Home() {
   const inputContainer = useRef<HTMLDivElement>(null);
   const inputField = useRef<HTMLTextAreaElement>(null);
 
+  async function getAllSession() {
+    try {
+      const response = await fetch("http://localhost:5000/session");
+      const data = await response.json();
+
+      return data.message;
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
   const [sessionList, setSessionList] = useState<session[]>([]);
   useEffect(() => {
-    async function getAllSession() {
-      try {
-        const response = await fetch("http://localhost:5000/session");
-        const data = await response.json();
-        console.log(data.message);
-
-        return data.message;
-      } catch (err) {
-        console.log(err);
-      }
-    }
-
     async function createNewHistory() {
       try {
         const response = await fetch("http://localhost:5000/session", {
           method: "POST",
         });
         const data = await response.json();
-        console.log(data.message);
 
         await getAllSession().then((data) => setSessionList(data));
         return data.message;
@@ -89,24 +84,29 @@ export default function Home() {
   const handleSubmit = async () => {
     setChat((prevChat) => [...prevChat, currInput]);
 
+    const response = await fetch(
+      `http://localhost:5000/?question=${encodeURIComponent(currInput)}`
+    );
+    const { message } = await response.json();
+
     if (contentArea.current) {
       contentArea.current.scrollTop = contentArea.current.scrollHeight;
     }
 
     await new Promise((resolve) => setTimeout(resolve, 500));
 
-    for (let i = 0; i < dummy.length; i++) {
+    for (let i = 0; i < message.length; i++) {
       if (contentArea.current) {
         contentArea.current.scrollTop = contentArea.current.scrollHeight;
       }
 
       if (i == 0) {
-        setChat((prevChat) => [...prevChat, dummy.slice(0, 1)]);
-      } else if (i === dummy.length - 1) {
+        setChat((prevChat) => [...prevChat, message.slice(0, 1)]);
+      } else if (i === message.length - 1) {
         setChat((prevChat) => {
           const newChat = [
             ...prevChat.slice(0, prevChat.length - 1),
-            dummy.slice(0, i),
+            message.slice(0, i + 1),
           ];
           saveHistory(newChat);
           return newChat;
@@ -114,11 +114,29 @@ export default function Home() {
       } else {
         setChat((prevChat) => [
           ...prevChat.slice(0, prevChat.length - 1),
-          dummy.slice(0, i),
+          message.slice(0, i),
         ]);
       }
-      await new Promise((resolve) => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 20));
     }
+  };
+
+  const changeChat = async (index: number) => {
+    await getAllSession().then((data: session[]) => {
+      setSessionList(data);
+
+      const newChat = [];
+      for (let chat of data[index].chatList) {
+        newChat.push(chat.question);
+        newChat.push(chat.response);
+      }
+
+      setChat(newChat);
+    });
+  };
+
+  const formatHistoryName = (name: string): string => {
+    return name.length > 30 ? name.slice(0, 30) + " ..." : name;
   };
 
   return (
@@ -134,14 +152,20 @@ export default function Home() {
             ChatGPS
           </h1>
           <ul className="overflow-auto py-3 w-full flex flex-col items-center">
-            {sessionList?.map(({ chatList }, idx) => (
+            {sessionList?.map(({ chatList, _id }, idx) => (
               <button
                 key={idx}
                 className="w-[277px] h-[47px] flex items-center px-4 bg-GREEN-200 rounded-[10px] mt-6 first:mt-0 shadow-history cursor-pointer flex-none hover:shadow-slate-600"
+                onClick={() => {
+                  changeChat(idx);
+                  setCurrId(_id);
+                }}
               >
                 <Image src={MessageIcon} width={16} height={16} alt="" />
                 <p className={clsx("ml-4 text-xs", montserrat.className)}>
-                  {chatList[0] ? chatList[0].question : "Empty Chat"}
+                  {chatList[0]
+                    ? formatHistoryName(chatList[0].question)
+                    : "Empty Chat"}
                 </p>
               </button>
             ))}
@@ -238,7 +262,14 @@ export default function Home() {
                 height={idx % 2 === 0 ? 20 : 24}
                 alt=""
               />
-              <p className={clsx(idx % 2 === 0 ? "ml-9" : "ml-8")}>{item}</p>
+              <p
+                className={clsx(
+                  "whitespace-pre-line",
+                  idx % 2 === 0 ? "ml-9" : "ml-8"
+                )}
+              >
+                {item}
+              </p>
             </div>
           ))}
         </div>
@@ -251,15 +282,29 @@ export default function Home() {
             <textarea
               ref={inputField}
               value={currInput}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  setCurrInput("");
+                  handleSubmit();
+                }
+              }}
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
-                setCurrInput(e.target.value);
+                if (e.target.value !== "\n") {
+                  setCurrInput(e.target.value);
+                }
               }}
               className={clsx(
                 "rounded-lg h-[49px] w-full max-h-[72px] focus:outline-none py-4 pl-6 pr-16 text-sm resize-none",
                 montserrat.className
               )}
             />
-            <button onClick={handleSubmit} className="absolute right-6 top-4">
+            <button
+              onClick={() => {
+                setCurrInput("");
+                handleSubmit();
+              }}
+              className="absolute right-6 top-4"
+            >
               <Image src={SendIcon} width={20} height={20} alt="" />
             </button>
           </div>
