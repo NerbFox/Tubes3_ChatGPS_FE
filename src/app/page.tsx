@@ -37,7 +37,9 @@ export default function Home() {
 
   async function getAllSession() {
     try {
-      const response = await fetch("http://localhost:5000/session");
+      const response = await fetch(
+        "https://gruesome-mouth-production.up.railway.app/session"
+      );
       const data = await response.json();
 
       return data.message;
@@ -50,9 +52,12 @@ export default function Home() {
   useEffect(() => {
     async function createNewHistory() {
       try {
-        const response = await fetch("http://localhost:5000/session", {
-          method: "POST",
-        });
+        const response = await fetch(
+          "https://gruesome-mouth-production.up.railway.app/session",
+          {
+            method: "POST",
+          }
+        );
         const data = await response.json();
 
         await getAllSession().then((data) => setSessionList(data));
@@ -67,15 +72,18 @@ export default function Home() {
 
   const saveHistory = async (chat: string[]) => {
     try {
-      const response = await fetch("http://localhost:5000/history", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: currId,
-          question: chat[chat.length - 2],
-          response: chat[chat.length - 1],
-        }),
-      });
+      const response = await fetch(
+        "https://gruesome-mouth-production.up.railway.app/history",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: currId,
+            question: chat[chat.length - 2],
+            response: chat[chat.length - 1],
+          }),
+        }
+      );
     } catch (err) {
       console.log(err);
     }
@@ -85,7 +93,9 @@ export default function Home() {
     setChat((prevChat) => [...prevChat, currInput]);
 
     const response = await fetch(
-      `http://localhost:5000/?question=${encodeURIComponent(currInput)}`
+      `https://gruesome-mouth-production.up.railway.app/?question=${encodeURIComponent(
+        currInput
+      )}`
     );
     const { message } = await response.json();
 
