@@ -95,7 +95,7 @@ export default function Home() {
     const response = await fetch(
       `https://gruesome-mouth-production.up.railway.app/?question=${encodeURIComponent(
         currInput
-      )}`
+      )}&iskmp=${encodeURIComponent(isKMP)}`
     );
     const { message } = await response.json();
 
