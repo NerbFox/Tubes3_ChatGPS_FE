@@ -223,7 +223,7 @@ export default function Home() {
                 "font-bold text-[10px] text-white hover:text-GREEN-400",
                 montserrat.className
               )}
-              href={"/"}
+              href={"https://github.com/NerbFox"}
             >
               NerbFox
             </Link>
@@ -232,7 +232,7 @@ export default function Home() {
                 "font-bold text-[10px] text-white hover:text-GREEN-400",
                 montserrat.className
               )}
-              href={"/"}
+              href={"https://github.com/arieljovananda88"}
             >
               arieljovananda88
             </Link>
@@ -241,7 +241,7 @@ export default function Home() {
                 "font-bold text-[10px] text-white hover:text-GREEN-400",
                 montserrat.className
               )}
-              href={"/"}
+              href={"https://github.com/RMA1403"}
             >
               RMA1403
             </Link>
