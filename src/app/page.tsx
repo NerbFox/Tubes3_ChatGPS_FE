@@ -14,6 +14,7 @@ import { useEffect, useRef, useState } from "react";
 
 const montserrat = Montserrat({ subsets: ["latin"] });
 const robotoSlab = Roboto_Slab({ subsets: ["latin"] });
+const url = "https://gruesome-mouth-production.up.railway.app"
 
 type chatListEntry = {
   question: string;
@@ -38,7 +39,7 @@ export default function Home() {
   async function getAllSession() {
     try {
       const response = await fetch(
-        "https://gruesome-mouth-production.up.railway.app/session"
+        `${url}/session`
       );
       const data = await response.json();
 
@@ -53,7 +54,7 @@ export default function Home() {
     async function createNewHistory() {
       try {
         const response = await fetch(
-          "https://gruesome-mouth-production.up.railway.app/session",
+          `${url}/session`,
           {
             method: "POST",
           }
@@ -73,7 +74,7 @@ export default function Home() {
   const saveHistory = async (chat: string[]) => {
     try {
       const response = await fetch(
-        "https://gruesome-mouth-production.up.railway.app/history",
+        `${url}/history`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -93,7 +94,7 @@ export default function Home() {
     setChat((prevChat) => [...prevChat, currInput]);
 
     const response = await fetch(
-      `https://gruesome-mouth-production.up.railway.app/?question=${encodeURIComponent(
+      `${url}/?question=${encodeURIComponent(
         currInput
       )}&iskmp=${encodeURIComponent(isKMP)}`
     );
