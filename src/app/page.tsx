@@ -14,7 +14,7 @@ import { useEffect, useRef, useState } from "react";
 
 const montserrat = Montserrat({ subsets: ["latin"] });
 const robotoSlab = Roboto_Slab({ subsets: ["latin"] });
-const url = "https://gruesome-mouth-production.up.railway.app"
+const url = "https://gruesome-mouth-production.up.railway.app";
 
 type chatListEntry = {
   question: string;
@@ -38,9 +38,7 @@ export default function Home() {
 
   async function getAllSession() {
     try {
-      const response = await fetch(
-        `${url}/session`
-      );
+      const response = await fetch(`${url}/session`);
       const data = await response.json();
 
       return data.message;
@@ -53,12 +51,9 @@ export default function Home() {
   useEffect(() => {
     async function createNewHistory() {
       try {
-        const response = await fetch(
-          `${url}/session`,
-          {
-            method: "POST",
-          }
-        );
+        const response = await fetch(`${url}/session`, {
+          method: "POST",
+        });
         const data = await response.json();
 
         await getAllSession().then((data) => setSessionList(data));
@@ -73,18 +68,15 @@ export default function Home() {
 
   const saveHistory = async (chat: string[]) => {
     try {
-      const response = await fetch(
-        `${url}/history`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            id: currId,
-            question: chat[chat.length - 2],
-            response: chat[chat.length - 1],
-          }),
-        }
-      );
+      const response = await fetch(`${url}/history`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: currId,
+          question: chat[chat.length - 2],
+          response: chat[chat.length - 1],
+        }),
+      });
     } catch (err) {
       console.log(err);
     }
